@@ -118,7 +118,7 @@
 
 -(NSDictionary *) getQrCode:(NSData *)data{
     if (data) {
-        NSDictionary * result = [self zbarScan:data];
+        NSDictionary * result = nil;
         if(result==nil){
             result =[self zXingScan:data];
         }
