@@ -2,7 +2,6 @@
 #import "FlutterRScanView.h"
 #import "RScanResult.h"
 #import "RScanCamera.h"
-#import "ZBarSDK.h"
 #import "ZXingObjC.h"
 @implementation RScanPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
@@ -79,61 +78,6 @@
         }
         [dict setValue:pointMap forKey:@"points"];
         return dict;
-    }
-    return nil;
-}
-
-
--(NSDictionary *)zbarScan:(NSData *)data{
-    CGImageRef cgImage;
-    
-    // Fallback on earlier versions
-    CGImageSourceRef sourceRef = CGImageSourceCreateWithData((CFDataRef)data, NULL);
-    
-    cgImage = CGImageSourceCreateImageAtIndex(sourceRef, 0, NULL);
-
-    ZBarImage * zbarImage =[[ZBarImage alloc]initWithCGImage:cgImage];
-    ZBarImageScanner* scanner = [[ZBarImageScanner alloc]init];
-    
-    [scanner setSymbology:ZBAR_NONE config:ZBAR_CFG_ENABLE to:1];
-    NSInteger resultInt = [scanner scanImage:zbarImage];
-
-    NSLog(@"zbar scan count:%ld",(long)resultInt);
-    
-    if (resultInt == 0) {
-        return nil;
-    }else{
-        ZBarSymbolSet* symbols = scanner.results;
-        ZBarSymbol *symbol = nil;
-        
-        for(symbol in symbols){
-            break;
-        }
-
-        NSString* resultStr = symbol.data;
-        NSLog(@"zbar scan result data:%@ , type:%@",resultStr,symbol.typeName);
-        if (resultStr!=nil) {
-            NSMutableDictionary *dict =[NSMutableDictionary dictionary];
-            [dict setValue:resultStr forKey:@"message"];
-            [dict setValue:[RScanResult getZBarType:symbol.type] forKey:@"type"];
-            NSMutableArray<NSDictionary *> * points = [NSMutableArray array];
-            CGPoint topLeft=symbol.bounds.origin;
-            CGPoint topRight=symbol.bounds.origin;
-            topRight.x +=symbol.bounds.size.width;
-            CGPoint bottomLeft=symbol.bounds.origin;
-            bottomLeft.y +=symbol.bounds.size.height;
-            
-            CGPoint bottomRight=symbol.bounds.origin;
-            bottomRight.x+=symbol.bounds.size.width;
-            bottomRight.y+=symbol.bounds.size.height;
-            
-            [points addObject:[self pointsToMap:topLeft]];
-            [points addObject:[self pointsToMap:topRight]];
-            [points addObject:[self pointsToMap:bottomLeft]];
-            [points addObject:[self pointsToMap:bottomRight]];
-            [dict setValue:points forKey:@"points"];
-            return dict;
-        }
     }
     return nil;
 }
